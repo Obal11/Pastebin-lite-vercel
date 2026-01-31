@@ -6,6 +6,7 @@ import { nanoid } from "nanoid";
 dotenv.config();
 const app = express();
 app.use(express.json());
+app.use(express.static("public"));
 
 const PORT = process.env.PORT || 3000;
 
@@ -262,9 +263,6 @@ app.post("/api/pastes", async (req, res) => {
     });
 });
 
-app.listen(PORT, () => {
-    console.log(`listening on port ${PORT}`);
-});
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 function renderNotFound(res) {
     return res.status(404).send(`
