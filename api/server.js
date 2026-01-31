@@ -33,7 +33,93 @@ app.get("/api/healthz", async (req, res) => {
     const statuscode = ok ? 200 : 500;
     return res.status(statuscode).json({ ok });
 });
-//getting logic
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//HTML escape helper
+function escapeHtml(str) {
+    return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;"); //this code protescts afains user injecting scripts
+}
+
+app.get("/p/:id", async (req, res) => {
+    const { id } = req.params;
+
+    // fetch paste + check TTL + check view limits
+    let pasteRow;
+
+    try {
+        const result = await query(
+            `SELECT id, content, ttl_seconds, max_views, view_count, created_at
+         FROM pastes
+         WHERE id = $1`,
+            [id],
+        );
+
+        if (result.rowCount === 0) {
+            return renderNotFound(res);
+        }
+
+        pasteRow = result.rows[0];
+    } catch (err) {
+        console.error("HTML fetch error:", err);
+        return renderNotFound(res);
+    }
+
+    //ttl
+    let expiresAt = null;
+
+    if (pasteRow.ttl_seconds != null) {
+        const created = new Date(pasteRow.created_at);
+        expiresAt = new Date(created.getTime() + pasteRow.ttl_seconds * 1000);
+
+        if (Date.now() >= expiresAt.getTime()) {
+            return renderNotFound(res);
+        }
+    }
+
+    //view limit
+    if (
+        pasteRow.max_views != null &&
+        pasteRow.view_count >= pasteRow.max_views
+    ) {
+        return renderNotFound(res);
+    }
+
+    const safeContent = escapeHtml(pasteRow.content);
+
+    return res.send(`
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Paste ${id}</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        max-width: 600px;
+        margin: 40px auto;
+        line-height: 1.5;
+      }
+      pre {
+        white-space: pre-wrap;
+        word-break: break-word;
+        padding: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        background: #f7f7f7;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Paste</h1>
+    <pre>${safeContent}</pre>
+  </body>
+</html>
+`);
+});
+//getting logic////////////////////////////////////////////////////////////////////////////////////////////////////
 app.get("/api/pastes/:id", async (req, res) => {
     const paramid = req.params.id;
     let pasteRow;
@@ -117,7 +203,7 @@ app.get("/api/pastes/:id", async (req, res) => {
         expires_at: expiresAt ? expiresAt.toISOString() : null,
     });
 });
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //pasting logic
 app.post("/api/pastes", async (req, res) => {
     //Validating paste parameters
@@ -179,3 +265,21 @@ app.post("/api/pastes", async (req, res) => {
 app.listen(PORT, () => {
     console.log(`listening on port ${PORT}`);
 });
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+function renderNotFound(res) {
+    return res.status(404).send(`
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Paste Not Found</title>
+    <style>
+      body { font-family: sans-serif; max-width: 600px; margin: 40px auto; }
+    </style>
+  </head>
+  <body>
+    <h1>404 - Paste Not Found</h1>
+    <p>This paste is expired, exceeded its views, or does not exist.</p>
+  </body>
+</html>
+`);
+}
