@@ -1,0 +1,19 @@
+{
+  "name": "pastebin-lite-vercel",
+  "version": "1.0.0",
+  "description": "A pastebin webapp like clone",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Obal11/Pastebin-lite-vercel.git"
+  },
+  "author": "Obal",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Obal11/Pastebin-lite-vercel/issues"
+  },
+  "homepage": "https://github.com/Obal11/Pastebin-lite-vercel#readme"
+}
