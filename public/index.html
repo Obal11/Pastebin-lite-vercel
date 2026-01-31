@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Create Paste</title>
+    </head>
+    <body>
+        <h1>Create a Paste</h1>
+        <form id="paste-form">
+            <textarea id="content" rows="8" cols="50" required></textarea><br />
+            <input
+                type="number"
+                id="ttl"
+                placeholder="TTL seconds (optional)"
+            /><br />
+            <input
+                type="number"
+                id="max"
+                placeholder="Max views (optional)"
+            /><br />
+            <button>Create</button>
+        </form>
+
+        <p id="result"></p>
+
+        <script>
+            const form = document.getElementById("paste-form");
+
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+
+                const body = {
+                    content: document.getElementById("content").value,
+                };
+
+                const ttl = document.getElementById("ttl").value;
+                if (ttl) body.ttl_seconds = Number(ttl);
+
+                const max = document.getElementById("max").value;
+                if (max) body.max_views = Number(max);
+
+                const res = await fetch("/api/pastes", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(body),
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    document.getElementById("result").innerHTML =
+                        `<a href="${data.url}">${data.url}</a>`;
+                } else {
+                    document.getElementById("result").innerText = data.error;
+                }
+            });
+        </script>
+    </body>
+</html>
