@@ -8,11 +8,11 @@ const app = express();
 app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
-
+//route to check db contectivity
 app.get("/api/healthz", async (req, res) => {
     const ok = await healthCheck();
     const statuscode = ok ? 200 : 500;
-    res.status(statuscode).json(ok);
+    return res.status(statuscode).json({ ok });
 });
 
 app.post("/api/pastes", async (req, res) => {
@@ -21,14 +21,14 @@ app.post("/api/pastes", async (req, res) => {
 
     //validating content validity
     if (typeof content !== "string" || content.trim() === "") {
-        res.status(400).json({
+        return res.status(400).json({
             error: "content must be in a non empty string.",
         });
     }
     //validating ttl seconds (life of content)
     if (ttl_seconds !== undefined) {
         if (!Number.isInteger(ttl_seconds) || ttl_seconds < 1) {
-            res.status(400).json({
+            return res.status(400).json({
                 error: "time limit must be greater than 1.",
             });
         }
@@ -37,7 +37,7 @@ app.post("/api/pastes", async (req, res) => {
     //validating max views
     if (max_views !== undefined) {
         if (!Number.isInteger(max_views) || max_views < 1) {
-            res.status(400).json({
+            return res.status(400).json({
                 error: "mex views must be greater than 1",
             });
         }
@@ -47,11 +47,16 @@ app.post("/api/pastes", async (req, res) => {
     const id = nanoid(10);
 
     //inserting paste data into db
-    await query(
-        `INSERT INTO pastes (id, content, ttl_seconds, max_views)
+    try {
+        await query(
+            `INSERT INTO pastes (id, content, ttl_seconds, max_views)
    VALUES ($1, $2, $3, $4)`,
-        [id, content, ttl_seconds ?? null, max_views ?? null],
-    );
+            [id, content, ttl_seconds ?? null, max_views ?? null],
+        );
+    } catch (err) {
+        console.log("error inserting paste: ", err);
+        return res.status(500).json({ error: "Internal server error" });
+    }
 
     //helper to send legitimate URL
     const baseUrl =
