@@ -1,4 +1,4 @@
-import { healthCheck } from "../db";
+import { healthCheck } from "../db.js";
 
 export default async function handler(req, res) {
     try {
