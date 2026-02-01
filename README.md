@@ -24,7 +24,7 @@ BASE_URL=http://localhost:3000
  - Start local dev server
    For local testing with Node (simple dev mode):
 ```bash
-node npm start
+npm start
 ```
  - or on Vercel
 ```bash
