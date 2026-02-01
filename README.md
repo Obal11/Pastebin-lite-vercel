@@ -6,7 +6,32 @@ Supports optional time-based expiry (TTL) and view-count limits.
 Deployed URL: **https://pastebin-lite-vercel-two.vercel.app**
 
 ---
+## Running the project locally
 
+ - Clone and install
+   ```git
+   git clone https://github.com/Obal11/pastebin-lite-vercel.git
+   cd pastebin-lite-vercel
+   npm install
+   ```
+ - Environment variables
+   Create a .env file in the project root:
+```env
+DATABASE_URL=your_postgres_connection_string
+TEST_MODE=0
+BASE_URL=http://localhost:3000
+```
+ - Start local dev server
+   For local testing with Node (simple dev mode):
+```bash
+node npm start
+```
+ - or on Vercel
+```bash
+npm install -g vercel
+vercel dev
+```
+---
 ## Tech Stack
 
 - Node.js (serverless functions on Vercel)
