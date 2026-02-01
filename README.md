@@ -11,7 +11,7 @@ Deployed URL: **https://pastebin-lite-vercel-two.vercel.app**
  - Clone and install
    ```git
    git clone https://github.com/Obal11/pastebin-lite-vercel.git
-   cd pastebin-lite-vercel
+   cd pastebin-lite-vercel-main
    npm install
    ```
  - Environment variables
